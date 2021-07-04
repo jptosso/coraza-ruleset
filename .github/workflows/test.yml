@@ -58,6 +58,6 @@ jobs:
         mv coreruleset/rules/*.data .
         cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf    
     - name: Start Caddy
-      run: caddy start --adapter caddyfile --config Caddyfile
+      run: /bin/caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
       run: go-ftw run --config ftw.yml -d coreruleset/tests/regression/tests
