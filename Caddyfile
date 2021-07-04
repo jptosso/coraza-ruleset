@@ -3,7 +3,7 @@
 	order coraza_waf first
 }
 
-http://127.0.0.1:8080 {
+http://127.0.0.1:80 {
 	coraza_waf {
 		include "custom-crs.conf"
 	}

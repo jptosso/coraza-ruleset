@@ -40,6 +40,10 @@ jobs:
       uses: actions/checkout@v2     
     - name: Build caddy with coraza
       run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
+    - name: Install Caddy
+      run: |
+        sudo mv caddy /bin
+        sudo setcap 'cap_net_bind_service=+ep' /bin/caddy
     - name: Setup CRS
       run: |
         git clone https://github.com/coreruleset/coreruleset 
@@ -58,6 +62,6 @@ jobs:
         mv coreruleset/rules/*.data .
         cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf    
     - name: Start Caddy
-      run: /bin/caddy start --adapter caddyfile --config Caddyfile
+      run: sudo /bin/caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
       run: go-ftw run --config ftw.yml -d coreruleset/tests/regression/tests
