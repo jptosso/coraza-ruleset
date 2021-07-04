@@ -41,7 +41,7 @@ jobs:
     - name: Setup CRS
       run: |
         git clone https://github.com/coreruleset/coreruleset
-        cat <<EOF >> custom-crs.conf
+        cat <<EOF >> /tmp/custom-crs.conf
         SecAction "id:900005,\
           phase:1,\
           nolog,\
@@ -53,10 +53,10 @@ jobs:
           setvar:tx.arg_name_length=100,\
           setvar:tx.arg_length=400"
         EOF
-        cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf      
+        cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> /tmp/custom-crs.conf      
     - name: Build caddy with coraza
       run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
     - name: Start Caddy
-      run: ./caddy run --adapter caddyfile --config Caddyfile
+      run: ./caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
       run: go-ftw --config ftw.yaml
