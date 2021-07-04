@@ -1,6 +1,48 @@
-# action.yml
-name: 'Core Ruleset regression test'
-description: 'OWASP Coreruleset regression with Coraza & Caddy'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
+name: OWASP CRS Test
+on:
+  push:
+    branches: 
+      - '*'
+  pull_request:
+    branches: [ master ]
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.16.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout libinjection
+      uses: actions/checkout@v2
+      with:
+        repository: libinjection/libinjection
+    - name: Build and install libinjection
+      run: |
+        gcc -std=c99 -Wall -Werror -fpic -c src/libinjection_sqli.c -o libinjection_sqli.o 
+        gcc -std=c99 -Wall -Werror -fpic -c src/libinjection_xss.c -o libinjection_xss.o
+        gcc -std=c99 -Wall -Werror -fpic -c src/libinjection_html5.c -o libinjection_html5.o
+        gcc -dynamiclib -shared -o libinjection.so libinjection_sqli.o libinjection_xss.o libinjection_html5.o
+        sudo cp *.so /usr/local/lib
+        sudo cp *.o /usr/local/lib
+        sudo cp src/*.h /usr/local/include/
+        sudo chmod 444 /usr/local/include/libinjection*
+        sudo ldconfig      
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}        
+    - name: Get xcaddy
+      run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+    - name: Get FTW
+      run: go install github.com/fzipi/go-ftw@latest
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Setup CRS
+      run: ./setup-crs.sh
+    - name: Build caddy with coraza
+      run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
+    - name: Start Caddy
+      run: ./caddy run --adapter caddyfile --config Caddyfile
+    - name: Run tests
+      run: go-ftw --config ftw.yaml
