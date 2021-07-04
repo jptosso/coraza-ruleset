@@ -39,7 +39,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Setup CRS
-      run: ./setup-crs.sh
+      run: ./crs-setup.sh
     - name: Build caddy with coraza
       run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
     - name: Start Caddy
