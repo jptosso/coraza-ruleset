@@ -1,0 +1,5 @@
+logfile: '/tmp/audit.log'
+logtype:
+  name: 'coraza'
+  timeregex:  '\[([A-Z][a-z]{2} [A-z][a-z]{2} \d{1,2} \d{1,2}\:\d{1,2}\:\d{1,2}\.\d+? \d{4})\]'
+  timeformat: 'ddd MMM DD HH:mm:ss.S YYYY'

@@ -30,6 +30,7 @@ jobs:
           setvar:tx.arg_name_length=100,\
           setvar:tx.arg_length=400"
         EOF
+        mv rules/*.data .
         cat crs-setup.conf.example rules/*.conf >> custom-crs.conf
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
@@ -37,7 +38,7 @@ jobs:
         name: custom-crs
         path: |
           custom-crs.conf
-          rules/*.data
+          *.data
   test:
     strategy:
       matrix:
@@ -79,4 +80,4 @@ jobs:
     - name: Start Caddy
       run: ./caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
-      run: go-ftw --config ftw.yaml
+      run: go-ftw run --config ftw.yml
