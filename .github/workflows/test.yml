@@ -1,0 +1,6 @@
+# action.yml
+name: 'Core Ruleset regression test'
+description: 'OWASP Coreruleset regression with Coraza & Caddy'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
