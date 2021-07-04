@@ -5,7 +5,7 @@
 
 http://127.0.0.1:8080 {
 	coraza_waf {
-		include '/tmp/custom-crs.conf'
+		include 'custom-crs.conf'
 	}
 	respond "test123"
 }

@@ -6,6 +6,31 @@ on:
   pull_request:
     branches: [ master ]
 jobs:
+  build-crs:
+    - name: Checkout CRS
+      uses: actions/checkout@v2
+      with:
+        repository: coreruleset/coreruleset 
+    - name: Setup CRS
+      run: |
+        cat <<EOF >> custom-crs.conf
+        SecAction "id:900005,\
+          phase:1,\
+          nolog,\
+          pass,\
+          ctl:ruleEngine=DetectionOnly,\
+          ctl:ruleRemoveById=910000,\
+          setvar:tx.paranoia_level=4,\
+          setvar:tx.crs_validate_utf8_encoding=1,\
+          setvar:tx.arg_name_length=100,\
+          setvar:tx.arg_length=400"
+        EOF
+        cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: custom-crs
+        path: custom-crs.conf 
   test:
     strategy:
       matrix:
@@ -37,25 +62,13 @@ jobs:
     - name: Get FTW
       run: go install github.com/fzipi/go-ftw@latest
     - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup CRS
-      run: |
-        git clone https://github.com/coreruleset/coreruleset
-        cat <<EOF >> /tmp/custom-crs.conf
-        SecAction "id:900005,\
-          phase:1,\
-          nolog,\
-          pass,\
-          ctl:ruleEngine=DetectionOnly,\
-          ctl:ruleRemoveById=910000,\
-          setvar:tx.paranoia_level=4,\
-          setvar:tx.crs_validate_utf8_encoding=1,\
-          setvar:tx.arg_name_length=100,\
-          setvar:tx.arg_length=400"
-        EOF
-        cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> /tmp/custom-crs.conf      
+      uses: actions/checkout@v2     
     - name: Build caddy with coraza
       run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
+    - name: Download CRS config
+      uses: actions/download-artifact@v2
+      with:
+        name: custom-crs     
     - name: Start Caddy
       run: ./caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
