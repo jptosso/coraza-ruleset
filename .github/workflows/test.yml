@@ -6,39 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 jobs:
-  build-crs:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:    
-    - name: Checkout CRS
-      uses: actions/checkout@v2
-      with:
-        repository: coreruleset/coreruleset 
-    - name: Setup CRS
-      run: |
-        cat <<EOF >> custom-crs.conf
-        SecAction "id:900005,\
-          phase:1,\
-          nolog,\
-          pass,\
-          ctl:ruleEngine=DetectionOnly,\
-          ctl:ruleRemoveById=910000,\
-          setvar:tx.paranoia_level=4,\
-          setvar:tx.crs_validate_utf8_encoding=1,\
-          setvar:tx.arg_name_length=100,\
-          setvar:tx.arg_length=400"
-        EOF
-        mv rules/*.data .
-        cat crs-setup.conf.example rules/*.conf >> custom-crs.conf
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v2
-      with:
-        name: custom-crs
-        path: |
-          custom-crs.conf
-          *.data
   test:
     strategy:
       matrix:
@@ -73,11 +40,24 @@ jobs:
       uses: actions/checkout@v2     
     - name: Build caddy with coraza
       run: CGO_ENABLED=1 xcaddy build --with github.com/jptosso/coraza-caddy
-    - name: Download CRS config
-      uses: actions/download-artifact@v2
-      with:
-        name: custom-crs     
+    - name: Setup CRS
+      run: |
+        git clone https://github.com/coreruleset/coreruleset 
+        cat <<EOF >> custom-crs.conf
+        SecAction "id:900005,\
+          phase:1,\
+          nolog,\
+          pass,\
+          ctl:ruleEngine=DetectionOnly,\
+          ctl:ruleRemoveById=910000,\
+          setvar:tx.paranoia_level=4,\
+          setvar:tx.crs_validate_utf8_encoding=1,\
+          setvar:tx.arg_name_length=100,\
+          setvar:tx.arg_length=400"
+        EOF
+        mv coreruleset/rules/*.data .
+        cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf    
     - name: Start Caddy
-      run: ./caddy start --adapter caddyfile --config Caddyfile
+      run: caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
-      run: go-ftw run --config ftw.yml
+      run: go-ftw run --config ftw.yml -d coreruleset/tests/regression/tests
