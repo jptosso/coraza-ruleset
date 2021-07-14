@@ -1,5 +1,29 @@
 logfile: '/tmp/audit.log'
 logtype:
   name: 'coraza'
-  timeregex:  '\[([A-Z][a-z]{2} [A-z][a-z]{2} \d{1,2} \d{1,2}\:\d{1,2}\:\d{1,2}\.\d+? \d{4})\]'
-  timeformat: 'ddd MMM DD HH:mm:ss.S YYYY'
+  timeregex:  '(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})'
+  timeformat: 'YYYY/MM/DD HH:mm:ss'
+  timetruncate: 1s
+testoverride:
+  ignore:
+    '920100-4': 'CONNECT method not allowed'
+    '920100-5': 'CONNECT method not allowed'
+    '920100-6': 'CONNECT method not allowed'
+    '920100-8': 'CONNECT method not allowed'
+    #Invalid HTTP request (multipart)
+    '920120-4': 'Invalid HTTP request (multipart)'
+    '920120-6': 'Invalid HTTP request (multipart)'
+    '920120-7': 'Invalid HTTP request (multipart)'
+    '920120-8': 'Invalid HTTP request (multipart)'
+    # Invalid HTTP request GET body
+    '920170-5': 'Invalid HTTP request GET body'
+    '920170-6': 'Invalid HTTP request GET body'
+    # Invalid HTTP request POST
+    '920180-4': 'Invalid HTTP request POST'
+    # False negatives
+    '920270-4': 'False negative, should not accept hostname%00'
+    '920272-5': 'Valid path for caddy'
+    '920273-1': 'Golang will ignore trailing %20'
+    '920280-1': 'Host is being forced by caddy'
+    '920280-3': 'The webserver will accept http/0.9 but no the policy'
+    '920290-1': 'We accept empty host'

@@ -61,6 +61,7 @@ jobs:
         EOF
         mv coreruleset/rules/*.data .
         cat coreruleset/crs-setup.conf.example coreruleset/rules/*.conf >> custom-crs.conf    
+        touch /tmp/audit.log
     - name: Start Caddy
       run: sudo /bin/caddy start --adapter caddyfile --config Caddyfile
     - name: Run tests
